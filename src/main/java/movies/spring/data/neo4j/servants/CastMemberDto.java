@@ -1,4 +1,4 @@
-package movies.spring.data.neo4j.movies;
+package movies.spring.data.neo4j.servants;
 
 import java.util.Objects;
 

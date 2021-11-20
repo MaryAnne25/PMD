@@ -1,4 +1,4 @@
-package movies.spring.data.neo4j.movies;
+package movies.spring.data.neo4j.servants;
 
 import org.springframework.data.neo4j.repository.query.Query;
 import org.springframework.data.repository.Repository;
@@ -14,8 +14,8 @@ import java.util.List;
  * @author Mark Angrish
  * @author Michael J. Simons
  */
-interface MovieRepository extends Repository<Movie, String> {
+interface ServantRepository extends Repository<Servant, Integer> {
 
-	@Query("MATCH (movie:Movie) WHERE movie.title CONTAINS $title RETURN movie")
-	List<Movie> findSearchResults(@Param("title") String title);
+	@Query("MATCH (servant:Servant) WHERE servant.name CONTAINS $name RETURN collect(servant)")
+	List<Servant> findSearchResults(@Param("name") String name);
 }
