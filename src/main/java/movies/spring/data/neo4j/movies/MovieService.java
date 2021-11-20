@@ -46,10 +46,10 @@ public class MovieService {
 	public MovieDetailsDto fetchDetailsByTitle(String title) {
 		return this.neo4jClient
 				.query("" +
-						"MATCH (movie:Movie {title: $title}) " +
-						"OPTIONAL MATCH (person:Person)-[r]->(movie) " +
-						"WITH movie, COLLECT({ name: person.name, job: REPLACE(TOLOWER(TYPE(r)), '_in', ''), role: HEAD(r.roles) }) as cast " +
-						"RETURN movie { .title, cast: cast }"
+						"MATCH (servant:Servant {name: $name}) " +
+						//"OPTIONAL MATCH (person:Person)-[r]->(movie) " +
+						//"WITH movie, COLLECT({ name: person.name, job: REPLACE(TOLOWER(TYPE(r)), '_in', ''), role: HEAD(r.roles) }) as cast " +
+						"RETURN servant { .name }"
 				)
 				.in(database())
 				.bindAll(Map.of("title", title))

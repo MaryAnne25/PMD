@@ -9,8 +9,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * @author Michael J. Simons
  */
 @SpringBootApplication
-public class SampleMovieApplication {
-
+public class SampleMovieApplication{
     public static void main(String[] args) {
         SpringApplication.run(SampleMovieApplication.class, args);
     }
