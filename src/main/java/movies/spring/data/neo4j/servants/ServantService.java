@@ -40,16 +40,15 @@ public class ServantService {
 		this.databaseSelectionProvider = databaseSelectionProvider;
 	}
 
-	public ServantDetailsDto fetchDetailsByName(String name) {
+	public ServantDetailsDto fetchDetailsById(int id) {
 		return this.neo4jClient
-				.query("" +
-						"MATCH (servant:Servant {name: $name}) " +
+				.query("MATCH (servant:Servant {servant_id: $id}) " +
 						//"OPTIONAL MATCH (person:Person)-[r]->(movie) " +
 						//"WITH movie, COLLECT({ name: person.name, job: REPLACE(TOLOWER(TYPE(r)), '_in', ''), role: HEAD(r.roles) }) as cast " +
 						"RETURN servant { .name, .servant_id }"
 				)
 				.in(database())
-				.bindAll(Map.of("name", name))
+				.bindAll(Map.of("id", id))
 				.fetchAs(ServantDetailsDto.class)
 				.mappedBy(this::toServantDetails)
 				.one()

@@ -22,9 +22,9 @@ class ServantController {
 		this.servantService = servantService;
 	}
 
-	@GetMapping("/servant/{name}")
-	public ServantDetailsDto findByName(@PathVariable("name") String name) {
-		return servantService.fetchDetailsByName(name);
+	@GetMapping("/servant/{id}")
+	public ServantDetailsDto findById(@PathVariable("id") int id) {
+		return servantService.fetchDetailsById(id);
 	}
 
 	@GetMapping("/search")
