@@ -33,11 +33,4 @@ interface ServantRepository extends Repository<Servant, Integer> {
 			"WHERE classe = c AND power = u AND s.servant_id <> servant.servant_id " +
 			"RETURN servant, classe, power, r, p")
 	List<ServantsDTO> findServantSubstitutes(@Param("id") int id);
-
-	@Query("MATCH (m:Materials) " +
-			"WHERE m.nome CONTAINS $materialName " +
-			"MATCH (servant:Servant)-[p]->(m) " +
-			"WITH m.nome AS materialName, COLLECT({servantId: servant.servant_id, name:servant.name, quantidade: p.quantidade}) AS materialWithServant " +
-			"RETURN materialName, materialWithServant")
-	List<ServantMaterialDTO> findServantMaterial(@Param("materialName") String materialName);
 }
