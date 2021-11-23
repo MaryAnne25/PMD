@@ -43,9 +43,11 @@ public class ServantService {
 	public ServantDetailsDto fetchDetailsById(int id) {
 		return this.neo4jClient
 				.query("MATCH (servant:Servant {servant_id: $id}) " +
-						//"OPTIONAL MATCH (person:Person)-[r]->(movie) " +
+						"MATCH (servant)-[:É_DA_CLASSE]->(classe:SClasse) " +
+						"MATCH (servant)-[:É_DA_FORÇA]->(power:SRanking)" +
 						//"WITH movie, COLLECT({ name: person.name, job: REPLACE(TOLOWER(TYPE(r)), '_in', ''), role: HEAD(r.roles) }) as cast " +
-						"RETURN servant { .name, .servant_id }"
+						"RETURN servant { .name, .servant_id, .classe, .power } " +
+						"LIMIT 1"
 				)
 				.in(database())
 				.bindAll(Map.of("id", id))
@@ -62,44 +64,12 @@ public class ServantService {
 				.collect(Collectors.toList());
 	}
 
-	/**
-	 * This is an example of when you might want to use the pure driver in case you have no need for mapping at all, neither in the
-	 * form of the way the {@link org.springframework.data.neo4j.core.Neo4jClient} allows and not in form of entities.
-	 *
-	 * @return A representation D3.js can handle
-	 */
-	/*public Map<String, List<Object>> fetchMovieGraph() {
-
-		var nodes = new ArrayList<>();
-		var links = new ArrayList<>();
-
-		try (Session session = sessionFor(database())) {
-			var records = session.readTransaction(tx -> tx.run(""
-				+ " MATCH (s:Servant) - [r:CONHECE] - (s:Servant)"
-				+ " RETURN s.name AS movie"
-			).list());
-			records.forEach(record -> {
-				var movie = Map.of("label", "movie", "title", record.get("movie").asString());
-
-				var targetIndex = nodes.size();
-				nodes.add(movie);
-
-				record.get("actors").asList(Value::asString).forEach(name -> {
-					var actor = Map.of("label", "actor", "title", name);
-
-					int sourceIndex;
-					if (nodes.contains(actor)) {
-						sourceIndex = nodes.indexOf(actor);
-					} else {
-						nodes.add(actor);
-						sourceIndex = nodes.size() - 1;
-					}
-					links.add(Map.of("source", sourceIndex, "target", targetIndex));
-				});
-			});
-		}
-		return Map.of("nodes", nodes, "links", links);
-	}*/
+	public List<ServantResultDto> searchSubstituteServants(int id) {
+		return this.servantRepository.findServantSubstitutes(id)
+				.stream()
+				.map(ServantResultDto::new)
+				.collect(Collectors.toList());
+	}
 
 	private Session sessionFor(String database) {
 		if (database == null) {
@@ -115,7 +85,7 @@ public class ServantService {
 	private ServantDetailsDto toServantDetails(TypeSystem ignored, org.neo4j.driver.Record record) {
 		var servant = record.get("servant");
 		return new ServantDetailsDto(
-				servant.get("name").asString(), servant.get("servant_id").asInt()
+				servant.get("name").asString(), servant.get("servant_id").asInt(), servant.get("classe").asString(), servant.get("power").asString()
 		);
 	}
 }

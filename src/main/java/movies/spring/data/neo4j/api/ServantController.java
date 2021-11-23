@@ -32,10 +32,11 @@ class ServantController {
 		return servantService.searchServantsByName(stripWildcards(name));
 	}
 
-	/*@GetMapping("/graph")
-	public Map<String, List<Object>> getGraph() {
-		return movieService.fetchMovieGraph();
-	}*/
+	@GetMapping("/subs/{id}")
+	List<ServantResultDto> subs(@PathVariable("id") int id) {
+		return servantService.searchSubstituteServants(id);
+	}
+
 
 	private static String stripWildcards(String name) {
 		String result = name;

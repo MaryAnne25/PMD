@@ -8,11 +8,15 @@ public class ServantDetailsDto {
 
     private final int id;
 
-    //private final List<CastMemberDto> cast;
+    private final String classe;
 
-    public ServantDetailsDto(String name, int id) {
+    private final String power;
+
+    public ServantDetailsDto(String name, int id, String classe, String power) {
         this.name = name;
         this.id = id;
+        this.classe = classe;
+        this.power = power;
     }
 
     public String getName() {

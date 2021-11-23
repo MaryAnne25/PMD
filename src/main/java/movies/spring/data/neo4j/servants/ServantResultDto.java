@@ -1,29 +1,57 @@
 package movies.spring.data.neo4j.servants;
 
-import java.util.Objects;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.ser.std.StdSerializer;
+
+import java.io.IOException;
 
 public class ServantResultDto {
 
-    private final Servant servant;
+    private final String name;
 
-    public ServantResultDto(Servant servant) {
-        this.servant = servant;
+    private final int id;
+
+    private final String classe;
+
+    private final String ranking;
+
+    public ServantResultDto(ServantsDTO servantDTO) {
+        this.name = servantDTO.getServant().getName();
+        this.id = servantDTO.getServant().getServantId();
+        this.classe = servantDTO.getClasse().getClasse();
+        this.ranking = servantDTO.getRanking().getRanking();
     }
 
-    public Servant getServant() {
-        return servant;
+    public String getName() {
+        return name;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public String getClasse() {
+        return classe;
+    }
+
+    public String getRanking() {
+        return ranking;
+    }
+}
+
+class ServantResultDtoSerializer extends StdSerializer<ServantResultDto> {
+    protected ServantResultDtoSerializer(Class<ServantResultDto> t) {
+        super(t);
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        ServantResultDto that = (ServantResultDto) o;
-        return Objects.equals(servant, that.servant);
-    }
+    public void serialize(ServantResultDto servantResultDto, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException {
+        jsonGenerator.writeStartObject();
+        jsonGenerator.writeStringField("name", servantResultDto.getName());
+        jsonGenerator.writeNumberField("id", servantResultDto.getId());
+        jsonGenerator.writeStringField("classe", servantResultDto.getClasse());
+        jsonGenerator.writeStringField("ranking", servantResultDto.getRanking());
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(servant);
     }
 }

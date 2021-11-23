@@ -19,14 +19,21 @@ public class Servant {
 	private final int servant_id;
 	@Property("name")
 	private final String name;
-	@Relationship(type = "CONHECE", direction = INCOMING)
-	private Set<Servant> amigos1 = new HashSet<>();
-	@Relationship(type = "CONHECE", direction = OUTGOING)
-	private Set<Servant> amigos2 = new HashSet<>();
+	//@Relationship(type = "CONHECE", direction = INCOMING)
+	//private Set<Servant> amigos1 = new HashSet<>();
+	//@Relationship(type = "CONHECE", direction = OUTGOING)
+	//private Set<Servant> amigos2 = new HashSet<>();
+	@Relationship(type = "É_DA_CLASSE", direction = OUTGOING)
+	private Classe classe;
+	@Relationship(type = "É_DA_FORÇA", direction = OUTGOING)
+	private Power ranking;
 
-	public Servant(String name, int servant_id) {
+
+	public Servant(String name, int servant_id, Classe classe, Power ranking) {
 		this.name = name;
 		this.servant_id = servant_id;
+		this.classe = classe;
+		this.ranking = ranking;
 	}
 
 	public String getName() {
@@ -35,5 +42,9 @@ public class Servant {
 
 	public int getServantId() {
 		return servant_id;
+	}
+
+	public void setClasse(Classe classe) {
+		this.classe = classe;
 	}
 }
