@@ -15,8 +15,12 @@
                         <form role="search" class="navbar-form" id="search">
                             <div class="form-group">
                                 <input type="text" value="Nero" placeholder="Search for Movie Title" class="form-control" name="search">
+                                <input type="radio" id="servantSearch" name="searchType" value="s" checked>
+                                <label for="servantSearch">Servants</label>
+                                <input type="radio" id="materialSearch" name="searchType" value="m" >
+                                <label for="materialSearch">Materiais</label>
                             </div>
-                            <button class="btn btn-default" type="submit">Search</button>
+                            <button class="btn btn-default">Search</button>
                         </form>
                     </li>
                 </ul>
@@ -36,7 +40,17 @@
 </div>
 
 <div class="row">
-    <div class="col-md-7">
+    <div class="col-md-5" id="detailsPanel">
+        <div class="panel panel-default">
+            <div class="panel-heading" id="name">Details</div>
+            <div class="row">
+                <div class="col-sm-4 col-md-4">
+                    <img src="" class="well" id="poster"/>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-7" id="servantSearchResultsPanel">
         <div class="panel panel-default">
             <div class="panel-heading">Search Results</div>
             <table id="results" class="table table-striped table-hover">
@@ -52,17 +66,38 @@
             </table>
         </div>
     </div>
-    <div class="col-md-7">
+    <div class="col-md-7" id="materialResultsPanel">
         <div class="panel panel-default">
-            <div class="panel-heading" id="name">Details</div>
-            <div class="row">
-                <div class="col-sm-4 col-md-4">
-                    <img src="" class="well" id="poster"/>
-                </div>
+            <div class="panel-heading">Search Results</div>
+            <table id="materialResults" class="table table-striped table-hover">
+                <thead>
+                <tr>
+                    <th>Material</th>
+                </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="col-md-7" id="servantsWithMaterialQtyPanel">
+        <div>
+            <div class="panel panel-default">
+                <div class="panel-heading">Servants que usam esse material</div>
+                <table id="servantsWithMaterialQty" class="table table-striped table-hover">
+                    <thead>
+                    <tr>
+                        <th>Servant</th>
+                        <th>Quantidade</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
-    <div class="col-md-7">
+    <div class="col-md-7" id="subsPanel">
         <div>
             <div class="panel panel-default">
                 <div class="panel-heading">Susbtituição</div>
@@ -82,12 +117,6 @@
     </div>
 
 </div>
-<style type="text/css">
-    .node { stroke: #222; stroke-width: 1.5px; }
-    .node.actor { fill: #888; }
-    .node.movie { fill: #BBB; }
-    .link { stroke: #999; stroke-opacity: .6; stroke-width: 1px; }
-</style>
 
 <script type="text/javascript" src="//code.jquery.com/jquery-1.11.0.min.js"></script>
 <script src="https://d3js.org/d3.v3.min.js" type="text/javascript"></script>
@@ -99,17 +128,21 @@
                         if (!data) return;
                         $("#name").text(data.name);
                         $("#poster").attr("src","https://static.atlasacademy.io/JP/Faces/f_" + data.id + "0.png");
-                        var $list = $("#crew").empty();
-                        data.cast.forEach(function (cast) {
-                            $list.append($("<li>" + cast.name + " " +cast.job + (cast.job == "acted"?" as " + cast.role : "") + "</li>"));
-                        });
                     }, "json");
             return false;
         }
 
         function searchServant(showFirst = true) {
             var query=$("#search").find("input[name=search]").val();
-            $.get("/search?q=" + encodeURIComponent(query),
+            var radio=$("#search").find("input[name=searchType]:checked").val();
+            if (radio == "s") {
+                $("#materialResultsPanel").hide()
+                $("#servantsWithMaterialQtyPanel").hide()
+                $("#detailsPanel").show()
+                $("#subsPanel").show()
+                $("#servantSearchResultsPanel").show()
+
+                $.get("/search?q=" + encodeURIComponent(query),
                     function (data) {
                         var t = $("table#results tbody").empty();
                         if (!data || data.length == 0) return;
@@ -127,6 +160,44 @@
                             subs(data[0].id);
                         }
                     }, "json");
+            }
+             if (radio == "m") {
+                $("#materialResultsPanel").show()
+                $("#servantsWithMaterialQtyPanel").show()
+                $("#detailsPanel").hide()
+                $("#subsPanel").hide()
+                $("#servantSearchResultsPanel").hide()
+
+
+                $.get("/servantWithMaterial/" + encodeURIComponent(query),
+                    function (data) {
+                        var t = $("table#materialResults tbody").empty();
+                        if (!data || data.length == 0) return;
+                        data.forEach(function (row, index) {
+                            var material = row
+                            $("<tr><td class='material'>" + material.materialName
+                                + "</td></tr>").appendTo(t)
+                                .click(function() { showServantWithMaterial(material.servantWithMaterial);})
+                        });
+                        if (showFirst) {
+                             showServantWithMaterial(data[0].id);
+                        }
+                    }, "json");
+            }
+
+            return false;
+        }
+
+        function showServantWithMaterial(servantWithMaterial) {
+            var t = $("table#servantsWithMaterialQty tbody").empty();
+            if (!servantWithMaterial || servantWithMaterial.length == 0) return;
+            servantWithMaterial.forEach(function (row, index) {
+                var swm = row
+                $("<tr><td class='servant'>" + swm.name
+                    + "</td><td>" +swm.quantidade
+                    + "</td></tr>").appendTo(t)
+                });
+
             return false;
         }
 
@@ -147,42 +218,7 @@
             return false;
         }
 
-        function searchMaterial(showFirst = true) {
-            var query=$("#search").find("input[name=search]").val();
-            $.get("/search?q=" + encodeURIComponent(query),
-                    function (data) {
-                        var t = $("table#materialResults tbody").empty();
-                        if (!data || data.length == 0) return;
-                        data.forEach(function (row, index) {
-                            var servant = row
-                            $("<tr><td class='material'>" + material.name
-                                + "</td></tr>").appendTo(t)
-                                .click(function() { showServantWithMaterial(servant.id);})
-                        });
-                        if (showFirst) {
-                             showServantWithMaterial(data[0].id);
-                        }
-                    }, "json");
-            return false;
-        }
-
-        function servantWithMaterial(id) {
-            $.get("/servantWithMaterial/" + encodeURIComponent(id),
-                    function (data) {
-                        var t = $("table#servantsWithMaterialQty tbody").empty();
-                        if (!data || data.length == 0) return;
-                        data.forEach(function (row, index) {
-                            var servant = row
-                            $("<tr><td class='servant'>" + servant.name
-                                + "</td><td>" + servant.quantidade
-                                + "</td></tr>").appendTo(t)
-                                .click(function() { showServant(servant.id);})
-                        });
-                    }, "json");
-            return false;
-        }
-
-        $("#search").submit(search);
+        $("#search").submit(searchServant);
         searchServant();
     })
 </script>

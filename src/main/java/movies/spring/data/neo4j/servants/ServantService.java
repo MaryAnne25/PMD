@@ -3,11 +3,14 @@ package movies.spring.data.neo4j.servants;
 import org.neo4j.driver.Driver;
 import org.neo4j.driver.Session;
 import org.neo4j.driver.SessionConfig;
+import org.neo4j.driver.Value;
 import org.neo4j.driver.types.TypeSystem;
 import org.springframework.data.neo4j.core.DatabaseSelectionProvider;
 import org.springframework.data.neo4j.core.Neo4jClient;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -44,8 +47,7 @@ public class ServantService {
 		return this.neo4jClient
 				.query("MATCH (servant:Servant {servant_id: $id}) " +
 						"MATCH (servant)-[:É_DA_CLASSE]->(classe:SClasse) " +
-						"MATCH (servant)-[:É_DA_FORÇA]->(power:SRanking)" +
-						//"WITH movie, COLLECT({ name: person.name, job: REPLACE(TOLOWER(TYPE(r)), '_in', ''), role: HEAD(r.roles) }) as cast " +
+						"MATCH (servant)-[:É_DA_FORÇA]->(power:SRanking) " +
 						"RETURN servant { .name, .servant_id, .classe, .power } " +
 						"LIMIT 1"
 				)
@@ -58,10 +60,11 @@ public class ServantService {
 	}
 
 	public List<ServantResultDto> searchServantsByName(String name) {
-		return this.servantRepository.findSearchResults(name)
+		List<ServantResultDto> var = this.servantRepository.findSearchResults(name)
 				.stream()
 				.map(ServantResultDto::new)
 				.collect(Collectors.toList());
+		return var;
 	}
 
 	public List<ServantResultDto> searchSubstituteServants(int id) {
@@ -69,6 +72,19 @@ public class ServantService {
 				.stream()
 				.map(ServantResultDto::new)
 				.collect(Collectors.toList());
+	}
+
+	public List<ServantMaterialDTO> searchServantsWithMaterial(String materialName) {
+		return (List<ServantMaterialDTO>) this.neo4jClient
+				.query("MATCH (m:Materials) " +
+				"WHERE m.nome CONTAINS $materialName " +
+				"MATCH (servant:Servant)-[p]->(m) " +
+				"WITH m.nome AS materialName, COLLECT({servantId: servant.servant_id, name:servant.name, quantidade: p.quantidade}) AS materialWithServant " +
+				"RETURN materialName, materialWithServant")
+				.bindAll(Map.of("materialName", materialName))
+				.fetchAs(ServantMaterialDTO.class)
+				.mappedBy(this::toServantMaterials)
+				.all();
 	}
 
 	private Session sessionFor(String database) {
@@ -87,5 +103,17 @@ public class ServantService {
 		return new ServantDetailsDto(
 				servant.get("name").asString(), servant.get("servant_id").asInt(), servant.get("classe").asString(), servant.get("power").asString()
 		);
+	}
+
+	private ServantMaterialDTO toServantMaterials(TypeSystem ignored, org.neo4j.driver.Record record) {
+		var material = record.get("materialName").toString();
+		var servantQuantity = record.get("materialWithServant").values();
+		var mws = new ArrayList<MaterialWithServant>();
+			for(Iterator<Value> i = servantQuantity.iterator(); i.hasNext();){
+				var item = i.next();
+				var ms = new MaterialWithServant(item.get("quantidade").asInt(), item.get("name").asString(), item.get("servantId").asInt());
+				mws.add(ms);
+			}
+		return new ServantMaterialDTO(material, mws);
 	}
 }

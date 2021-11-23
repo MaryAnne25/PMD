@@ -1,8 +1,6 @@
 package movies.spring.data.neo4j.api;
 
-import movies.spring.data.neo4j.servants.ServantResultDto;
-import movies.spring.data.neo4j.servants.ServantService;
-import movies.spring.data.neo4j.servants.ServantDetailsDto;
+import movies.spring.data.neo4j.servants.*;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -35,6 +33,11 @@ class ServantController {
 	@GetMapping("/subs/{id}")
 	List<ServantResultDto> subs(@PathVariable("id") int id) {
 		return servantService.searchSubstituteServants(id);
+	}
+
+	@GetMapping("servantWithMaterial/{name}")
+	List<ServantMaterialDTO> materials(@PathVariable("name") String name) {
+		return servantService.searchServantsWithMaterial(stripWildcards(name));
 	}
 
 
