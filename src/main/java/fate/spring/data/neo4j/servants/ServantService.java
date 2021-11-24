@@ -1,6 +1,7 @@
-package movies.spring.data.neo4j.servants;
+package fate.spring.data.neo4j.servants;
 
 import org.neo4j.driver.Driver;
+import org.neo4j.driver.Record;
 import org.neo4j.driver.Session;
 import org.neo4j.driver.SessionConfig;
 import org.neo4j.driver.Value;
@@ -9,18 +10,9 @@ import org.springframework.data.neo4j.core.DatabaseSelectionProvider;
 import org.springframework.data.neo4j.core.Neo4jClient;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
-/**
- * @author Michael Hunger
- * @author Mark Angrish
- * @author Jennifer Reif
- * @author Michael J. Simons
- */
 @Service
 public class ServantService {
 
@@ -31,6 +23,8 @@ public class ServantService {
 	private final Driver driver;
 
 	private final DatabaseSelectionProvider databaseSelectionProvider;
+
+	private List<ServantResultDto> servantResultDtoList;
 
 	ServantService(ServantRepository servantRepository,
 				 Neo4jClient neo4jClient,
@@ -87,6 +81,30 @@ public class ServantService {
 				.all();
 	}
 
+	public List<ServantResultDto> getAllServants() {
+		return this.servantRepository.getAllServants()
+				.stream()
+				.map(ServantResultDto::new)
+				.collect(Collectors.toList());
+	}
+
+	public List<ServantResultDto> getGrafoConhecidos(String name1, String name2) {
+		servantResultDtoList = new ArrayList<ServantResultDto>();
+		String query = "OPTIONAL MATCH (p1:Servant {name:'" + name1 + "'}), (p2:Servant {name: '" + name2 +"'}) " +
+				"CALL apoc.algo.dijkstra(p1, p2, 'CONHECE', 'l', 1) " +
+				"YIELD path " +
+				"WITH COLLECT(nodes(path)) as no " +
+				"RETURN no";
+		var item = (List<ServantResultDto>) this.neo4jClient
+				.query(query)
+				.bindAll(Map.of(name1, name2))
+				.fetchAs(ServantResultDto.class)
+				.mappedBy(this::toServantResult)
+				.all();
+
+		return servantResultDtoList;
+	}
+
 	private Session sessionFor(String database) {
 		if (database == null) {
 			return driver.session();
@@ -115,5 +133,28 @@ public class ServantService {
 				mws.add(ms);
 			}
 		return new ServantMaterialDTO(material, mws);
+	}
+
+	private ServantResultDto toServantResult(TypeSystem ignored, Record record) {
+		var no = record.get("no").values();
+		for(Iterator<Value> i = no.iterator(); i.hasNext();){
+			var item = i.next();
+			for(Iterator<Value> j = item.values().iterator(); j.hasNext();){
+				var item2 = j.next().asNode();
+				var id = item2.get("servant_id").asInt();
+				var name = item2.get("name").asString();
+				Classe classeAux = new Classe("n");
+				Power powerAux = new Power("s");
+				Servant servantAux = new Servant(name, id, classeAux, powerAux);
+				ServantsDTO sdAux = new ServantsDTO(servantAux, classeAux, powerAux);
+				ServantResultDto srdAux = new ServantResultDto(sdAux);
+				servantResultDtoList.add(srdAux);
+			}
+		}
+		Classe classeAux = new Classe("n");
+		Power powerAux = new Power("s");
+		Servant servantAux = new Servant("a", 1, classeAux, powerAux);
+		ServantsDTO sdAux = new ServantsDTO(servantAux, classeAux, powerAux);
+		return new ServantResultDto(sdAux);
 	}
 }

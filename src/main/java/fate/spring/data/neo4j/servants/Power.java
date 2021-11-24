@@ -1,4 +1,4 @@
-package movies.spring.data.neo4j.servants;
+package fate.spring.data.neo4j.servants;
 
 import org.springframework.data.neo4j.core.schema.Id;
 import org.springframework.data.neo4j.core.schema.Node;

@@ -1,16 +1,10 @@
-package movies.spring.data.neo4j.servants;
+package fate.spring.data.neo4j.servants;
 
-import org.springframework.beans.propertyeditors.ClassEditor;
 import org.springframework.data.neo4j.core.schema.Id;
 import org.springframework.data.neo4j.core.schema.Node;
 import org.springframework.data.neo4j.core.schema.Property;
 import org.springframework.data.neo4j.core.schema.Relationship;
-import org.springframework.stereotype.Component;
 
-import java.util.HashSet;
-import java.util.Set;
-
-import static org.springframework.data.neo4j.core.schema.Relationship.Direction.INCOMING;
 import static org.springframework.data.neo4j.core.schema.Relationship.Direction.OUTGOING;
 
 @Node("Servant")

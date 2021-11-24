@@ -1,4 +1,4 @@
-package movies.spring.data.neo4j.servants;
+package fate.spring.data.neo4j.servants;
 
 public class ServantMaterialResultDto {
 

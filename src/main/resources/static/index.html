@@ -2,7 +2,7 @@
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://neo4j-documentation.github.io/developer-resources/language-guides/assets/css/main.css">
-    <title>Neo4j Movies</title>
+    <title>Neo4j Fate</title>
 </head>
 
 <body>
@@ -13,14 +13,16 @@
                 <ul class="nav navbar-nav">
                     <li>
                         <form role="search" class="navbar-form" id="search">
-                            <div class="form-group">
-                                <input type="text" value="Nero" placeholder="Search for Movie Title" class="form-control" name="search">
-                                <input type="radio" id="servantSearch" name="searchType" value="s" checked>
-                                <label for="servantSearch">Servants</label>
-                                <input type="radio" id="materialSearch" name="searchType" value="m" >
-                                <label for="materialSearch">Materiais</label>
+                            <div>
+                                <div class="form-group">
+                                    <input type="text" value="Nero" placeholder="Search for Servant or Material" class="form-control" name="search">
+                                    <input type="radio" id="servantSearch" name="searchType" value="s" checked>
+                                    <label for="servantSearch">Servants</label>
+                                    <input type="radio" id="materialSearch" name="searchType" value="m" >
+                                    <label for="materialSearch">Materiais</label>
+                                </div>
+                                <button class="btn btn-default" type="submit">Search</button>
                             </div>
-                            <button class="btn btn-default">Search</button>
                         </form>
                     </li>
                 </ul>
@@ -32,13 +34,27 @@
                     </a>
                 </div>
                 <div class="navbar-brand">
-                    <div class="brand">Neo4j Servants</div>
+                    <div class="brand">Neo4j Fate</div>
                 </div>
+            </div>
+            <div>
+                <form class="navbar-form" id="conhece">
+                    <select name="servants1" id="servants1">
+
+                    </select>
+
+                    <select name="servants2" id="servants2">
+
+                    </select>
+                    <button class="btn btn-default" type="submit">Search</button>
+                </form>
             </div>
         </div>
     </div>
 </div>
+<div class="col-md-5" id="linkedList">
 
+</div>
 <div class="row">
     <div class="col-md-5" id="detailsPanel">
         <div class="panel panel-default">
@@ -115,7 +131,6 @@
             </div>
         </div>
     </div>
-
 </div>
 
 <script type="text/javascript" src="//code.jquery.com/jquery-1.11.0.min.js"></script>
@@ -220,6 +235,52 @@
 
         $("#search").submit(searchServant);
         searchServant();
+
+        function loadServants() {
+             $.get("/allServants/",
+                function(data) {
+                    var aux = $("#conhece")
+                    var t = aux.find("#servants1").html()
+                    var u = aux.find("#servants2").html()
+                    if (!data || data.length == 0) return;
+                    data.forEach(function (row, index) {
+                        var servant = row
+                        $('#servants1').append($('<option>', {
+                            value: servant.servantId,
+                            text: servant.name
+                        }));
+
+                        $('#servants2').append($('<option>', {
+                            value: servant.servantId,
+                            text: servant.name
+                        }));
+                    });
+                }, "json");
+             return false;
+        }
+
+        function getConnections() {
+            var aux = $("#conhece")
+            var s1=$('select[name=servants1] option').filter(':selected').val()
+            var s2=$('select[name=servants2] option').filter(':selected').val()
+
+            $.get("/conhece/" + s1 + "/" + s2,
+                function(data) {
+                    var t = $("#linkedList")
+                    if (!data || data.length == 0) return;
+                    t.append("<h2 class='label label-important'>")
+                    data.forEach(function (row, index) {
+                        var servant = row
+                        t.append(servant.name + " --> ");
+                    });
+                    t.append("</h2>");
+                }, "json");
+            return false;
+        }
+
+        $("#conhece").submit(getConnections);
+        loadServants();
+
     })
 </script>
 

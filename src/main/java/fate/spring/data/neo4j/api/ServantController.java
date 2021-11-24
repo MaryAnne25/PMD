@@ -1,6 +1,10 @@
-package movies.spring.data.neo4j.api;
+package fate.spring.data.neo4j.api;
 
-import movies.spring.data.neo4j.servants.*;
+import fate.spring.data.neo4j.servants.ServantDetailsDto;
+import fate.spring.data.neo4j.servants.ServantMaterialDTO;
+import fate.spring.data.neo4j.servants.ServantResultDto;
+import fate.spring.data.neo4j.servants.ServantService;
+import fate.spring.data.neo4j.servants.*;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -8,9 +12,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-/**
- * @author Michael J. Simons
- */
 @RestController
 class ServantController {
 
@@ -35,9 +36,19 @@ class ServantController {
 		return servantService.searchSubstituteServants(id);
 	}
 
-	@GetMapping("servantWithMaterial/{name}")
+	@GetMapping("/servantWithMaterial/{name}")
 	List<ServantMaterialDTO> materials(@PathVariable("name") String name) {
 		return servantService.searchServantsWithMaterial(stripWildcards(name));
+	}
+
+	@GetMapping("/allServants")
+	List<ServantResultDto> allServants() {
+		return servantService.getAllServants();
+	}
+
+	@GetMapping("/conhece/{name1}/{name2}")
+	List<ServantResultDto> conhecidos(@PathVariable("name1") String name1, @PathVariable("name2") String name2) {
+		return servantService.getGrafoConhecidos(name1, name2);
 	}
 
 

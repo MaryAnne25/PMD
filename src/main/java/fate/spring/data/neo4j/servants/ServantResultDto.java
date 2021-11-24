@@ -1,4 +1,4 @@
-package movies.spring.data.neo4j.servants;
+package fate.spring.data.neo4j.servants;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
